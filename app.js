@@ -4,7 +4,7 @@ const mongoose=require('mongoose');
 const Blog=require('./models/blog');
 const { result } = require('lodash');
 
-
+const blogrouter=require("./routes/blogRoutes")
 const app=express();
 
 const dbURI="mongodb://localhost:27017/blog";
@@ -33,19 +33,25 @@ app.use(express.urlencoded({extended:true}));
 //to post data
 
 app.set('view engine','ejs');
-//Setting the view engine to ejs 
-app.get('/',(req,res)=>{
-    const blogs = [
-        {title: 'Yoshi finds eggs', snippet: 'Lorem ipsum dolor sit amet consectetur'},
-        {title: 'Mario finds stars', snippet: 'Lorem ipsum dolor sit amet consectetur'},
+//Setting the view engine to ejs
+
+// app.get('/',(req,res)=>{
+//     const blogs = [
+//         {title: 'Yoshi finds eggs', snippet: 'Lorem ipsum dolor sit amet consectetur'},
+//         {title: 'Mario finds stars', snippet: 'Lorem ipsum dolor sit amet consectetur'},
         
-        {title: 'How to defeat bowser', snippet: 'Lorem ipsum dolor sit amet consectetur'}
-    ];
-   //Sending array of data as argument blogs:blogs === blogs
-        res.render('index',{title:"Home",blogs});
-    //looks inside views folder for file named index
-    //index file is rendered
-});
+//         {title: 'How to defeat bowser', snippet: 'Lorem ipsum dolor sit amet consectetur'}
+//     ];
+//    //Sending array of data as argument blogs:blogs === blogs
+//         res.render('index',{title:"Home",blogs});
+//     //looks inside views folder for file named index
+//     //index file is rendered
+// });
+app.get('/', (req, res) => {
+    res.redirect('/blogs');
+  });
+
+  app.use('/blogs',blogrouter); 
 
 app.get('/add-blog',(req,res)=>{
     //get into this path    
@@ -72,25 +78,20 @@ app.get("/all-blog",(req,res)=>{
     }).catch((err)=>{console.log(err)})
 })
 
+app.get("/all-blog-1",(req,res)=>{
+    Blog.find().limit(1).then((result)=>{
+        //getting data from mongodb
+        //sending all the data to result as response--> json data
+        res.send(result);
+    }).catch((err)=>{console.log(err)})
+})
+
 
 // app.get('/',(res,req)=>{
 //     res.redirect('/blogs');
 // })
 
-app.post('/blogs',(req,res)=>{
-    //req.body contains the form data
-    //blog contains the data
-   const blog=new Blog(req.body);
-   blog.save().then((result)=>{
-    //saving to the database
-    // console.log(blog);-->printing the output
-    res.redirect('/blogs')
-   }).catch((err)=>console.log(err))
-});
 
-app.get('/blogs',(req,res)=>{
-    Blog.find().sort({createdAt:-1}).then((result)=>{res.render('index',{title:'All Blogs',blogs:result})}).catch((err)=>{console.log(err)})
-})
 
 
 
@@ -101,33 +102,6 @@ app.get('/about',(req,res)=>{
 });
 
 
-app.get("/blogs/:id",(req,res)=>{
-    const id=req.params.id;
-    //to find the id in the req.url
-   Blog.findById(id).then((result)=>{
-    //finding the blog using its id
-    
-    res.render('details',{title:"Details",blog:result})}).catch((err)=>console.log(err));
-    //rendering it to details page with arguments
-   });
-
-
-
-app.use('/blog/create',(req,res)=>{
-    res.render('create',{title:"Create"});
-});
-
-app.delete('/blogs/:id', (req, res) => {
-    const id = req.params.id;
-    
-    Blog.findByIdAndDelete(id)
-      .then(result => {
-        res.json({ redirect: '/blogs' });
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  });
 app.use((req,res)=>{
     res.status(404).render('404',{title:"404"});
 });
