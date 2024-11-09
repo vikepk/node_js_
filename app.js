@@ -8,7 +8,7 @@ const blogrouter=require("./routes/blogRoutes")
 const app=express();
 
 const dbURI="mongodb://localhost:27017/blog";
-mongoose.connect(dbURI).then((result)=>app.listen(3000)).catch((err)=>{console.log(err)})
+mongoose.connect(dbURI).then((result)=>app.listen(5000)).catch((err)=>{console.log(err)})
 
 
 
@@ -102,6 +102,33 @@ app.get('/about',(req,res)=>{
 });
 
 
+
+const users = [
+    { id: 1, email: 'user@example.com', password: 'password123' },
+    // Add more users here
+  ];
+  
+  app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    const user = users.find(u => u.email === email && u.password === password);
+  
+    if (user) {
+      // Successful login
+      res.json({ id: user.id, email: user.email });
+    } else {
+      // Failed login
+      res.status(401).json({ message: 'Login failed' });
+    }
+  });
+
+
+app.post('/send_data',(req,res)=>{
+    const blog=new Blog(req.body);
+    blog.save().then((result)=>{
+        res.send(result);
+        console.log(result);
+    }).catch((err)=>console.log(err));
+})
 app.use((req,res)=>{
     res.status(404).render('404',{title:"404"});
 });
